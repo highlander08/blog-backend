@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Post } from './entities/post.entity';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { CreatePostDto } from './dto/create-post.dto';
+import { User } from 'src/auth/entities/user.entity';
 
 @Injectable()
 export class PostsService {
@@ -11,13 +12,38 @@ export class PostsService {
     @InjectRepository(Post) private readonly repo: Repository<Post>,
   ) {}
 
-  async create(createPostDto: CreatePostDto) {
-    const slug = createPostDto.title.split(' ').join('_').toLocaleLowerCase();
-    return await this.repo.insert({ ...createPostDto, slug });
+  async create(createPostDto: CreatePostDto, user: User) {
+    // const slug = createPostDto.title.split(' ').join('_').toLocaleLowerCase();
+    const post = new Post();
+    post.userId = user.id;
+    Object.assign(post, createPostDto);
+    this.repo.create(post);
+    return await this.repo.save(post);
   }
 
-  async findAll() {
-    return await this.repo.find();
+  async findAll(query?: string) {
+    const myQuery = this.repo
+      .createQueryBuilder('post')
+      .leftJoinAndSelect('post.category', 'category')
+      .leftJoinAndSelect('post.user', 'user');
+
+    if (!(Object.keys(query).length === 0) && query.constructor === Object) {
+      const queryKeys = Object.keys(query);
+      if (queryKeys.includes('title')) {
+        myQuery.where('post.title LIKE :title', {
+          title: `%${query['title']}%`,
+        });
+      }
+      if (queryKeys.includes('sort')) {
+        myQuery.orderBy('post.title', query['sort'].toUpperCase());
+      }
+      if (queryKeys.includes('category')) {
+        myQuery.andWhere('category.title = :cat', { cat: query['category'] });
+      }
+      return myQuery.getMany();
+    } else {
+      return myQuery.getMany();
+    }
   }
 
   async findOne(id: string) {
@@ -26,11 +52,32 @@ export class PostsService {
     return post;
   }
 
-  async update(id: number, updatePostDto: UpdatePostDto) {
-    return await this.repo.update(id, updatePostDto);
+  async findBySlug(slug: string) {
+    try {
+      const post = await this.repo.findOneOrFail({ where: { slug } });
+      return post;
+    } catch (error) {
+      throw new BadRequestException(`Post ${slug} not found`);
+    }
   }
 
-  async remove(id: number) {
-    return await this.repo.delete(id);
+  async update(slug: string, updatePostDto: UpdatePostDto) {
+    const post = await this.repo.findOne({ where: { slug: slug } });
+    if (!post) {
+      throw new BadRequestException('Post not found');
+    }
+    post.modifiedOn = new Date(Date.now());
+    post.category = updatePostDto.category;
+    Object.assign(post, updatePostDto);
+    return this.repo.save(post);
+  }
+
+  async remove(id: string) {
+    const post = await this.repo.findOne({ where: { id: id } });
+    if (!post) {
+      throw new BadRequestException('Post not found');
+    }
+    await this.repo.remove(post);
+    return { success: true, post };
   }
 }

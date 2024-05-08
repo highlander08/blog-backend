@@ -1,20 +1,38 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
-import { PostsService } from './posts.service';
-import { UpdatePostDto } from './dto/update-post.dto';
+import {
+  Body,
+  ClassSerializerInterceptor,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+  UseInterceptors,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import { CreatePostDto } from './dto/create-post.dto';
+import { UpdatePostDto } from './dto/update-post.dto';
+import { PostsService } from './posts.service';
+import { Request } from 'express';
+import { User } from 'src/auth/entities/user.entity';
 
 @Controller('posts')
+@UseInterceptors(ClassSerializerInterceptor)
 export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
   @Post()
-  create(@Body() createPostDto: CreatePostDto) {
-    return this.postsService.create(createPostDto);
+  @UsePipes(ValidationPipe)
+  create(@Body() createPostDto: CreatePostDto, @Req() req: Request) {
+    return this.postsService.create(createPostDto, req.user as User);
   }
 
   @Get()
-  findAll() {
-    return this.postsService.findAll();
+  findAll(@Query() query: any) {
+    return this.postsService.findAll(query);
   }
 
   @Get(':id')
@@ -22,13 +40,18 @@ export class PostsController {
     return this.postsService.findOne(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePostDto: UpdatePostDto) {
-    return this.postsService.update(+id, updatePostDto);
+  @Get('/slug/:slug')
+  findBySlug(@Param('slug') slug: string) {
+    return this.postsService.findBySlug(slug);
+  }
+
+  @Patch(':slug')
+  update(@Param('slug') slug: string, @Body() updatePostDto: UpdatePostDto) {
+    return this.postsService.update(slug, updatePostDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.postsService.remove(+id);
+    return this.postsService.remove(id);
   }
 }
