@@ -29,14 +29,18 @@ export class PostsService {
 
     if (!(Object.keys(query).length === 0) && query.constructor === Object) {
       const queryKeys = Object.keys(query);
+      
+      // check if key title is present in query
       if (queryKeys.includes('title')) {
         myQuery.where('post.title LIKE :title', {
           title: `%${query['title']}%`,
         });
       }
+      // check if key sort is present in query
       if (queryKeys.includes('sort')) {
         myQuery.orderBy('post.title', query['sort'].toUpperCase());
       }
+      // check if key category is present in query
       if (queryKeys.includes('category')) {
         myQuery.andWhere('category.title = :cat', { cat: query['category'] });
       }

@@ -1,26 +1,59 @@
-import { Injectable } from '@nestjs/common';
-// import { CreateUserDto } from './dto/create-user.dto';
-// import { UpdateAuthDto } from './dto/update-auth.dto';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { User } from './entities/user.entity';
+import { UserLoginDto } from './user-login.dto';
+import * as bcrypt from 'bcryptjs';
+import { JwtService } from '@nestjs/jwt';
+import { CreateUserDto } from './dto/create-user.dto';
 
 @Injectable()
 export class AuthService {
-  // create(createAuthDto: CreateUserDto) {
-  //   return 'This action adds a new auth';
-  // }
+  constructor(
+    @InjectRepository(User) private readonly repo: Repository<User>,
+    private jwtService: JwtService,
+  ) {}
+  async login(loginDto: UserLoginDto) {
+    const user = await this.repo
+      .createQueryBuilder('user')
+      .addSelect('user.password')
+      .where('user.email = :email', { email: loginDto.email })
+      .getOne();
 
-  findAll() {
-    return `This action returns all auth`;
+    if (!user) {
+      throw new UnauthorizedException('Bad credentials');
+    } else {
+      if (await this.verifyPassword(loginDto.password, user.password)) {
+        const token = await this.jwtService.signAsync({
+          email: user.email,
+          id: user.id,
+        });
+        delete user.password;
+        return { token, user };
+      } else {
+        throw new UnauthorizedException('Bad credentials');
+      }
+    }
   }
-
-  findOne(id: number) {
-    return `This action returns a #${id} auth`;
+  async verifyPassword(password: string, hash: string) {
+    return await bcrypt.compare(password, hash);
   }
-
-  // update(id: number, updateAuthDto: UpdateAuthDto) {
-  //   return `This action updates a #${id} auth`;
-  // }
-
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
+  async register(createUserDto: CreateUserDto) {
+    const { email } = createUserDto;
+    const checkForUser = await this.repo.findOne({ where: { email: email } });
+    if (checkForUser) {
+      throw new BadRequestException('Email is already');
+    } else {
+      const user = new User();
+      Object.assign(user, createUserDto);
+      this.repo.create(user);
+      await this.repo.save(user);
+      delete user.password;
+      return user;
+    }
   }
 }

@@ -12,14 +12,14 @@ export class User {
   @PrimaryGeneratedColumn()
   id: number;
   @Column()
-  fistName: string;
+  firstName: string;
   @Column()
   lastName: string;
   @Column()
   email: string;
-  @Column({select: false})
+  @Column({ select: false })
   password: string;
-  @Column()
+  @Column({ default: null })
   profilePic: string;
 
   @OneToMany(() => Post, (post) => post.user)
