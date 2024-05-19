@@ -9,6 +9,7 @@ import {
   Post,
   Query,
   Req,
+  UseGuards,
   UseInterceptors,
   UsePipes,
   ValidationPipe,
@@ -18,6 +19,7 @@ import { UpdatePostDto } from './dto/update-post.dto';
 import { PostsService } from './posts.service';
 import { Request } from 'express';
 import { User } from 'src/auth/entities/user.entity';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('posts')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -26,6 +28,7 @@ export class PostsController {
 
   @Post()
   @UsePipes(ValidationPipe)
+  @UseGuards(AuthGuard('jwt'))
   create(@Body() createPostDto: CreatePostDto, @Req() req: Request) {
     return this.postsService.create(createPostDto, req.user as User);
   }
@@ -46,11 +49,13 @@ export class PostsController {
   }
 
   @Patch(':slug')
+  @UseGuards(AuthGuard('jwt'))
   update(@Param('slug') slug: string, @Body() updatePostDto: UpdatePostDto) {
     return this.postsService.update(slug, updatePostDto);
   }
 
   @Delete(':id')
+  @UseGuards(AuthGuard('jwt'))
   remove(@Param('id') id: string) {
     return this.postsService.remove(id);
   }
