@@ -20,6 +20,8 @@ import { PostsService } from './posts.service';
 import { Request } from 'express';
 import { User } from 'src/auth/entities/user.entity';
 import { AuthGuard } from '@nestjs/passport';
+import { CurrentUserGuard } from 'src/auth/current-user.guard';
+import { CurrentUser } from 'src/auth/user.decoraor';
 
 @Controller('posts')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -29,12 +31,20 @@ export class PostsController {
   @Post()
   @UsePipes(ValidationPipe)
   @UseGuards(AuthGuard('jwt'))
-  create(@Body() createPostDto: CreatePostDto, @Req() req: Request) {
+  create(
+    @Body() createPostDto: CreatePostDto,
+    @Req() req: Request,
+    @CurrentUser() user: User,
+  ) {
+    console.log(user);
     return this.postsService.create(createPostDto, req.user as User);
   }
 
   @Get()
-  findAll(@Query() query: any) {
+  @UseGuards(CurrentUserGuard)
+  findAll(@Query() query: any, @CurrentUser() user: User) {
+    console.log(user);
+
     return this.postsService.findAll(query);
   }
 
