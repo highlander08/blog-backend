@@ -21,8 +21,9 @@ import { User } from './auth/entities/user.entity';
       entities: [Post, Category, User],
       synchronize: true,
     }),
+    
     PostsModule,
-    CategoryModule, 
+    CategoryModule,
     AuthModule,
   ],
   controllers: [AppController],
