@@ -29,7 +29,7 @@ export class PostsService {
 
     if (!(Object.keys(query).length === 0) && query.constructor === Object) {
       const queryKeys = Object.keys(query);
-      
+
       // check if key title is present in query
       if (queryKeys.includes('title')) {
         myQuery.where('post.title LIKE :title', {
@@ -52,7 +52,7 @@ export class PostsService {
 
   async findOne(id: string) {
     const post = await this.repo.findOne({ where: { id } });
-    if (post) throw new BadRequestException('Not found post');
+    if (!post) throw new BadRequestException('Not found post');
     return post;
   }
 
@@ -66,7 +66,7 @@ export class PostsService {
   }
 
   async update(slug: string, updatePostDto: UpdatePostDto) {
-    const post = await this.repo.findOne({ where: { slug: slug } });
+    const post = await this.repo.findOne({ where: { slug } });
     if (!post) {
       throw new BadRequestException('Post not found');
     }
@@ -77,7 +77,7 @@ export class PostsService {
   }
 
   async remove(id: string) {
-    const post = await this.repo.findOne({ where: { id: id } });
+    const post = await this.repo.findOne({ where: { id } });
     if (!post) {
       throw new BadRequestException('Post not found');
     }

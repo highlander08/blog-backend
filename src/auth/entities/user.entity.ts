@@ -7,6 +7,7 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { UserRoles } from '../user-roles';
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn()
@@ -21,6 +22,8 @@ export class User {
   password: string;
   @Column({ default: null })
   profilePic: string;
+  @Column({ type: 'enum', enum: UserRoles, default: UserRoles.Reader })
+  roles: UserRoles;
 
   @OneToMany(() => Post, (post) => post.user)
   posts: Post[];

@@ -15,7 +15,7 @@ import {
   UseGuards,
   UseInterceptors,
   UsePipes,
-  ValidationPipe
+  ValidationPipe,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -27,6 +27,7 @@ import { CurrentUser } from 'src/auth/user.decoraor';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { PostsService } from './posts.service';
+import { ACGuard, UseRoles } from 'nest-access-control';
 
 @Controller('posts')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -35,7 +36,12 @@ export class PostsController {
 
   @Post()
   @UsePipes(ValidationPipe)
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), ACGuard)
+  @UseRoles({
+    action: 'create',
+    possession: 'any',
+    resource: 'posts',
+  })
   create(
     @Body() createPostDto: CreatePostDto,
     @Req() req: Request,
@@ -67,20 +73,19 @@ export class PostsController {
     }),
   )
   async uploadPhoto(@UploadedFile() file: Express.Multer.File) {
-    if(!file){
-      throw new BadRequestException('File is not img')
+    if (!file) {
+      throw new BadRequestException('File is not img');
     } else {
       const response = {
-        filePath: `http://localhost:5000/posts/pictures/${file.filename}`
+        filePath: `http://localhost:5000/posts/pictures/${file.filename}`,
       };
-      return response
+      return response;
     }
   }
   @Get('pictures/:filename')
   async getPicture(@Param('filename') filename: any, @Res() res: Response) {
-    res.sendFile(filename, {root: './uploads'});
+    res.sendFile(filename, { root: './uploads' });
   }
- 
 
   @Get()
   @UseGuards(CurrentUserGuard)
@@ -101,13 +106,23 @@ export class PostsController {
   }
 
   @Patch(':slug')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), ACGuard)
+  @UseRoles({
+    possession: 'any',
+    action: 'update',
+    resource: 'posts',
+  })
   update(@Param('slug') slug: string, @Body() updatePostDto: UpdatePostDto) {
     return this.postsService.update(slug, updatePostDto);
   }
 
   @Delete(':id')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), ACGuard)
+  @UseRoles({
+    possession: 'any',
+    action: 'delete',
+    resource: 'posts',
+  })
   remove(@Param('id') id: string) {
     return this.postsService.remove(id);
   }

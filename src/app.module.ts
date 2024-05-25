@@ -8,6 +8,8 @@ import { CategoryModule } from './category/category.module';
 import { AuthModule } from './auth/auth.module';
 import { Category } from './category/entities/category.entity';
 import { User } from './auth/entities/user.entity';
+import { AccessControlModule } from 'nest-access-control';
+import { roles } from './auth/user-roles';
 
 @Module({
   imports: [
@@ -25,6 +27,7 @@ import { User } from './auth/entities/user.entity';
     PostsModule,
     CategoryModule,
     AuthModule,
+    AccessControlModule.forRoles(roles)
   ],
   controllers: [AppController],
   providers: [AppService],
