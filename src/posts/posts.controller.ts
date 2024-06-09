@@ -82,6 +82,7 @@ export class PostsController {
       return response;
     }
   }
+  
   @Get('pictures/:filename')
   async getPicture(@Param('filename') filename: any, @Res() res: Response) {
     res.sendFile(filename, { root: './uploads' });

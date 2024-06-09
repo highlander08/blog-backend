@@ -4,6 +4,7 @@ export enum UserRoles {
   Admin = 'Admin',
   Reader = 'Reader',
 }
+
 export const roles: RolesBuilder = new RolesBuilder();
 
 roles
