@@ -21,28 +21,38 @@ This is a RESTful API built with [NestJS](https://nestjs.com/) that allows users
 
 ## Features
 
-- User authentication using JWT (JSON Web Token).
-- Upload and manage photo posts.
-- Organize photos into categories.
-- CRUD operations for posts and categories.
-- Secure access with role-based permissions.
+## Recursos
+- Criando CRUD para postagens e categorias
+- Integrando com Typeorm 
+- Criando Entidade de postagem e criação da tabela de postagem 
+- Criando padrão de repositório
+- Criando Autenticação de usuário usando JWT (JSON Web Token) 
+- Criando Relações MySql usando Typeorm 
+- Usando pacotes de classes de validação e classes de transformação 
+- Criando ouvintes de eventos ou hooks no Typeorm
+- Ocultando propriedades da entidade na resposta
+- Criando Serviços extras em postagem 
+- Registrando usuário no banco de dados
+Protegendo rotas com guard 
+- Criando decoradores personalizados
+- Carregando arquivos em NestJS 
+- Controlando acesso baseado em função
 
 ## Technologies Used
 
 - **NestJS**: A progressive Node.js framework.
-- **TypeScript**: Superset of JavaScript for enhanced development.
 - **JWT**: For secure authentication.
 - **TypeORM**: ORM for database management.
-- **PostgreSQL**: Database used for persistence.
+- **MySql**: Database used for persistence.
 - **Multer**: Middleware for handling file uploads.
-- **Cloud Storage (optional)**: For storing images (e.g., AWS S3, Azure Blob Storage).
+- **Local Storage**: Disk Local
 
 ## Installation
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/yourusername/photo-blog-api.git
-   cd photo-blog-api
+   git clone https://github.com/highlander08/blog-bakcend
+   cd blog-backend 
    ```
 
 2. **Install dependencies**:
@@ -56,8 +66,6 @@ This is a RESTful API built with [NestJS](https://nestjs.com/) that allows users
    ```env
    DATABASE_URL=your_postgres_database_url
    JWT_SECRET=your_jwt_secret_key
-   CLOUD_STORAGE_API_KEY=your_cloud_storage_api_key
-   CLOUD_STORAGE_BUCKET_NAME=your_bucket_name
    ```
 
 4. **Run the database migrations**:
@@ -72,8 +80,8 @@ This is a RESTful API built with [NestJS](https://nestjs.com/) that allows users
 
 ## Usage
 
-- To interact with the API, use a REST client (e.g., Postman) or integrate it into your frontend application.
-- Authentication is required for most endpoints, except for public photo listings.
+- Para interagir com a API, use um cliente REST (por exemplo, Postman ou insominia) ou integre-o ao seu aplicativo frontend.
+- A autenticação é necessária para a maioria dos endpoints, exceto para listagens de fotos públicas.
 
 ## API Endpoints
 
@@ -91,13 +99,21 @@ This is a RESTful API built with [NestJS](https://nestjs.com/) that allows users
     ```
 
 - **Login**: `POST /auth/login`
+  - AUTHENTICATES a user and returns a JWT token- **Login**: `POST /auth/login`
   - Authenticates a user and returns a JWT token.
+  - **Request body**:
+    ```json
+    {
+      "email": "string",
+      "passw.
   - **Request body**:
     ```json
     {
       "email": "string",
       "password": "string"
     }
+
+  - **Logout**: `POST /auth/logout`
     ```
 
 ### Photo Posts
