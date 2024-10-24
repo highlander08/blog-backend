@@ -64,7 +64,7 @@ Protegendo rotas com guard
    Create a `.env` file in the root of the project with the following keys:
 
    ```env
-   DATABASE_URL=your_postgres_database_url
+   DATABASE_URL=your_mysql_database_url
    JWT_SECRET=your_jwt_secret_key
    ```
 
